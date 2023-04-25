@@ -60,6 +60,7 @@ async function run() {
     try {
 
         const usersCollection = client.db('zooom-vrooom-iGarage').collection('users');
+        const categoryCollection = client.db('zooom-vrooom-iGarage').collection('category');
 
         //middleWare for verifying admin
         //note: make sure you use verifyAdmin after use verifyJWT
@@ -120,6 +121,13 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
+        })
+
+        //category loader
+        app.get("/category", async (req, res) => {
+            const query = {};
+            const category = await categoryCollection.find(query).toArray();
+            res.send(category)
         })
 
     }
