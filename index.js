@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken")
 require('dotenv').config()
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 //first of all open node by put command "node" from cmd
 //require('crypto').randomBytes(64).toString("hex")
@@ -92,7 +92,35 @@ async function run() {
             res.status(403).send({ accessToken: "" })
         });
 
+        //user to database
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await usersCollection.insertOne(user)
+            res.send(result);
+        })
 
+        //get all user
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        });
+        //add new admin by other admin
+        app.put('/users/admin/:id', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: ObjectId(id) }
+
+            const options = { upsert: true };
+
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
 
     }
 
