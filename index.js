@@ -90,7 +90,7 @@ async function run() {
             const user = await usersCollection.findOne(query);
 
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: "1h" })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: "23h" })
 
                 return res.send({ accessToken: token });
             }
@@ -112,20 +112,27 @@ async function run() {
             res.send(users);
         });
         //add new admin by other admin
-        app.put('/users/admin/:id', async (req, res) => {
-            const id = req.query.id;
-            const filter = { _id: ObjectId(id) }
+        // app.put('/users/admin/:id', async (req, res) => {
+        //     const id = req.query.id;
+        //     const filter = { _id: ObjectId(id) }
 
-            const options = { upsert: true };
+        //     const options = { upsert: true };
 
-            const updatedDoc = {
-                $set: {
-                    role: 'admin'
-                }
-            }
-            const result = await usersCollection.updateOne(filter, updatedDoc, options);
-            res.send(result);
-        })
+        //     const updatedDoc = {
+        //         $set: {
+        //             role: 'admin'
+        //         }
+        //     }
+        //     const result = await usersCollection.updateOne(filter, updatedDoc, options);
+        //     res.send(result);
+        // })
+
+        app.get('/users/verification/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email };
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        });
 
         //category loader
         app.get("/category", async (req, res) => {
@@ -143,7 +150,7 @@ async function run() {
         })
 
         //put reported item on products collection
-        app.put('/product/reported/:id', async (req, res) => {
+        app.put('/product/reported/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             console.log(id)
 
