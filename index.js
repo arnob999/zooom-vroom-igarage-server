@@ -144,8 +144,10 @@ async function run() {
 
         //put reported item on products collection
         app.put('/product/reported/:id', async (req, res) => {
-            const id = req.query.id;
-            const filter = { _id: ObjectId(id) }
+            const id = req.params.id;
+            console.log(id)
+
+            const filter = { _id: new ObjectId(id) }
 
             const options = { upsert: true };
 
