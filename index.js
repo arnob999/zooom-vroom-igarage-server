@@ -65,6 +65,7 @@ async function run() {
 
         const productsCollection = client.db('zooom-vrooom-iGarage').collection('products');
 
+
         //middleWare for verifying admin
         //note: make sure you use verifyAdmin after use verifyJWT
 
@@ -99,7 +100,7 @@ async function run() {
         //user to database
         app.post('/users', async (req, res) => {
             const user = req.body;
-            console.log(user);
+
             const result = await usersCollection.insertOne(user)
             res.send(result);
         })
@@ -137,8 +138,24 @@ async function run() {
             const categoryId = req.params.catId
             const query = { catId: categoryId };
             const products = await productsCollection.find(query).toArray();
-            console.log(products)
+
             res.send(products)
+        })
+
+        //put reported item on products collection
+        app.put('/product/reported/:id', async (req, res) => {
+            const id = req.query.id;
+            const filter = { _id: ObjectId(id) }
+
+            const options = { upsert: true };
+
+            const updatedDoc = {
+                $set: {
+                    report: 'true'
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
         })
 
     }
