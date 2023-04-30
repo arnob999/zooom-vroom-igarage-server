@@ -111,6 +111,16 @@ async function run() {
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         });
+
+        //delete any specific user
+        app.delete("/user/delete/:id", verifyJWT, verifyAdmin, async (req, res) => {
+
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result)
+        })
         //add new admin by other admin
         // app.put('/users/admin/:id', async (req, res) => {
         //     const id = req.query.id;
@@ -173,26 +183,21 @@ async function run() {
 
 
         //validate user as Admin with hook "useAdmin"
-        app.get('/users/admin/:email', async (req, res) => {
+        app.get('/users/authorization/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
-            res.send({ isAdmin: user?.role === 'admin' });
+            res.send({ isAuthorized: user.role });
         })
-        //validate user as Seller with hook "useSeller"
-        app.get('/users/seller/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email }
-            const user = await usersCollection.findOne(query);
-            res.send({ isSeller: user?.role === 'seller' });
+
+        //list of buyer or seller as an admin
+        app.get('/users/authorized/:authorization', verifyJWT, verifyAdmin, async (req, res) => {
+            const authorization = req.params.authorization;
+            const query = { role: authorization }
+            const user = await usersCollection.find(query).toArray();
+            res.send(user);
         })
-        //validate user as Buyer with hook "useBuyer"
-        app.get('/users/buyer/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email }
-            const user = await usersCollection.findOne(query);
-            res.send({ isBuyer: user?.role === 'buyer' });
-        })
+
 
     }
 
