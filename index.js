@@ -162,7 +162,6 @@ async function run() {
         //put reported item on products collection
         app.put('/product/reported/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
-            console.log(id)
 
             const filter = { _id: new ObjectId(id) }
 
@@ -189,7 +188,6 @@ async function run() {
 
         app.delete('/product/delete/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            console.log(id)
             const filter = { _id: new ObjectId(id) };
             const result = await productsCollection.deleteOne(filter);
             res.send(result)
@@ -215,8 +213,6 @@ async function run() {
         //to verify user as verified,option is only limited to admin
         app.put('/user/verification/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            console.log(id)
-
             const filter = { _id: new ObjectId(id) }
 
             const options = { upsert: true };
@@ -243,8 +239,6 @@ async function run() {
         //to advertised product as seller
         app.put('/product/advertise/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
-            console.log(id)
-
             const filter = { _id: new ObjectId(id) }
 
             const options = { upsert: true };
