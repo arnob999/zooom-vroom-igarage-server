@@ -212,6 +212,51 @@ async function run() {
             res.send(user);
         })
 
+        //to verify user as verified,option is only limited to admin
+        app.put('/user/verification/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+
+            const filter = { _id: new ObjectId(id) }
+
+            const options = { upsert: true };
+
+            const updatedDoc = {
+                $set: {
+                    verified: 'true'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+        //fetch my product for seller email address
+        app.get('/seller/product/:email', verifyJWT, async (req, res) => {
+
+            const email = req.params.email;
+            const query = { sellerEmail: email }
+            const result = await productsCollection.find(query).toArray();
+            res.send(result)
+
+        })
+
+        //to advertised product as seller
+        app.put('/product/advertise/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+
+            const filter = { _id: new ObjectId(id) }
+
+            const options = { upsert: true };
+
+            const updatedDoc = {
+                $set: {
+                    isAdvertised: 'true'
+                }
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
 
     }
 
