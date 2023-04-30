@@ -177,9 +177,23 @@ async function run() {
             res.send(result);
         })
 
+        //ftech reported product for admin
+        app.get('/product/allReported', verifyJWT, verifyAdmin, async (req, res) => {
+            const filter = { report: "true" };
 
+            const result = await productsCollection.find(filter).toArray();
+            res.send(result)
+        })
 
+        //delete reported products
 
+        app.delete('/product/delete/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const filter = { _id: new ObjectId(id) };
+            const result = await productsCollection.deleteOne(filter);
+            res.send(result)
+        })
 
 
         //validate user as Admin with hook "useAdmin"
