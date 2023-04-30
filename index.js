@@ -65,6 +65,8 @@ async function run() {
 
         const productsCollection = client.db('zooom-vrooom-iGarage').collection('products');
 
+        const bookingCollection = client.db('zooom-vrooom-iGarage').collection('booking');
+
 
         //middleWare for verifying admin
         //note: make sure you use verifyAdmin after use verifyJWT
@@ -100,7 +102,6 @@ async function run() {
         //user to database
         app.post('/users', async (req, res) => {
             const user = req.body;
-
             const result = await usersCollection.insertOne(user)
             res.send(result);
         })
@@ -156,6 +157,21 @@ async function run() {
             const query = { catId: categoryId };
             const products = await productsCollection.find(query).toArray();
 
+            res.send(products)
+        })
+
+        //product to database
+        app.post('/product', verifyJWT, async (req, res) => {
+            const product = req.body;
+            const result = await productsCollection.insertOne(product)
+            res.send(result);
+        })
+
+
+        //category wise products loader
+        app.get("/advertised", async (req, res) => {
+            const query = { isAdvertised: "true", status: "unsold" };
+            const products = await productsCollection.find(query).toArray();
             res.send(products)
         })
 
@@ -249,6 +265,13 @@ async function run() {
                 }
             }
             const result = await productsCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+
+        app.post('/booking', verifyJWT, async (req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking)
             res.send(result);
         })
 
