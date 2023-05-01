@@ -3,6 +3,9 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
+
+
+
 //requiring jsonWebToken
 const jwt = require("jsonwebtoken")
 
@@ -14,9 +17,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //first of all open node by put command "node" from cmd
 //require('crypto').randomBytes(64).toString("hex")
 
-//environment variable
 
+//note: you must use require('dotenv').config() before use any environment variables
+//requiring stripe key
+const stripe = require('stripe')(process.env.STRIPE_SECRETS)
 
+console.log(process.env.STRIPE_SECRETS)
 //2 middleware
 app.use(cors());
 app.use(express.json());
@@ -67,6 +73,9 @@ async function run() {
 
         const bookingCollection = client.db('zooom-vrooom-iGarage').collection('booking');
 
+        const paymentCollection = client.db('zooom-vrooom-iGarage').collection('payment');
+
+
 
         //middleWare for verifying admin
         //note: make sure you use verifyAdmin after use verifyJWT
@@ -98,6 +107,49 @@ async function run() {
             }
             res.status(403).send({ accessToken: "" })
         });
+
+
+        /*
+Stripe API
+*/
+        app.post('/create-payment-intents', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100000;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            })
+
+
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        })
+
+
+        //storing transation details to database
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body
+            const result = await paymentCollection.insertOne(payment)
+
+            const id = payment.bookingId
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: "true",
+                    transactionId: payment.transactionId
+                }
+            }
+            const updateResult = await bookingCollection.updateOne(filter, updatedDoc)
+            res.send(result)
+        })
+
 
         //user to database
         app.post('/users', async (req, res) => {
@@ -282,6 +334,16 @@ async function run() {
             const booking = await bookingCollection.find(query).toArray();
             res.send(booking)
         })
+        //fetch booking for buyer
+        app.get('/bookingId/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const booking = await bookingCollection.findOne(query);
+            res.send(booking)
+        })
+
+
+
 
     }
 
@@ -299,5 +361,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Zooom Vroom iGarage server running on port ${port}`)
+    console.log(`Zooom Vroom iGarage server running on port ${port} `)
 })
