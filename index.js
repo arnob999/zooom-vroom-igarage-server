@@ -268,11 +268,19 @@ async function run() {
             res.send(result);
         })
 
-
+        //booking reqest to DB
         app.post('/booking', verifyJWT, async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking)
             res.send(result);
+        })
+        //fetch booking for buyer
+        app.get('/booking/:email', verifyJWT, async (req, res) => {
+
+            const email = req.params.email;
+            const query = { buyerEmail: email };
+            const booking = await bookingCollection.find(query).toArray();
+            res.send(booking)
         })
 
     }
