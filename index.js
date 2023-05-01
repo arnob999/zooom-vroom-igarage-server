@@ -115,7 +115,7 @@ Stripe API
         app.post('/create-payment-intents', async (req, res) => {
             const booking = req.body;
             const price = booking.price;
-            const amount = price * 100000;
+            const amount = price * 100;
 
             const paymentIntent = await stripe.paymentIntents.create({
                 currency: 'usd',
@@ -342,7 +342,33 @@ Stripe API
             res.send(booking)
         })
 
+        //syncing product information to database
+        app.put('/payment/success/:bookingId', verifyJWT, async (req, res) => {
+            const bookingId = req.params.bookingId;
 
+            const filter = { productId: bookingId }
+            const idFIltering = { _id: new ObjectId(bookingId) }
+            const options = { upsert: true };
+
+            const updatedDoc = {
+                $set: {
+                    payment: 'true'
+                }
+            }
+
+            const updatedProduct = {
+                $set: {
+                    status: 'sold'
+                }
+            }
+
+
+            const result = await bookingCollection.updateOne(filter, updatedDoc, options);
+
+            const productStatus = await productsCollection.updateOne(idFIltering, updatedProduct, options,)
+
+            res.send(result);
+        })
 
 
     }
