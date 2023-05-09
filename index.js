@@ -22,7 +22,6 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //requiring stripe key
 const stripe = require('stripe')(process.env.STRIPE_SECRETS)
 
-console.log(process.env.STRIPE_SECRETS)
 //2 middleware
 app.use(cors());
 app.use(express.json());
@@ -268,6 +267,24 @@ Stripe API
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isAuthorized: user.role });
+            // res.send(user.role);
+        })
+
+
+        //private route of dashboard for seller,buyer,admin with hook "useDashAuth"
+        //role authorization
+        app.get('/role/authorization/:role/:email', async (req, res) => {
+            const email = req.params.email;
+            const role = req.params.role;
+            const query = { email };
+            console.log(role)
+            const user = await usersCollection.findOne(query);
+            if (user.role === role) {
+                res.send({ acknowledge: true })
+            }
+            else {
+                res.send({ acknowledge: false })
+            }
         })
 
         //list of buyer or seller as an admin
