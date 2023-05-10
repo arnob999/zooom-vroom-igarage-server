@@ -273,11 +273,10 @@ Stripe API
 
         //private route of dashboard for seller,buyer,admin with hook "useDashAuth"
         //role authorization
-        app.get('/role/authorization/:role/:email', async (req, res) => {
+        app.get('/role/authorization/:role/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const role = req.params.role;
             const query = { email };
-            console.log(role)
             const user = await usersCollection.findOne(query);
             if (user.role === role) {
                 res.send({ acknowledge: true })
